@@ -1,0 +1,82 @@
+/* ==========================================================
+   デザイントークン（別途提示されたデザイン要件に基づく）
+   画面側では生の色コード・px値を直接書かず、ここの変数を使う。
+   ========================================================== */
+:root {
+  /* --- メインカラー --- */
+  --color-main: #08bf5a;
+
+  /* --- テキスト・背景・境界線 --- */
+  --color-text: #222222;
+  --color-white: #ffffff;
+  --color-border: #e0e0e0;
+  --color-gray-888: #888888;
+  --color-gray-ddd: #dddddd;
+  --color-gray-f8: #f8f8f8;
+  --color-gray-b4: #b4b4b4;
+  --color-gray-f0: #f0f0f0;
+
+  /* --- リンク --- */
+  --color-link: #5799db;
+  --color-link-weak: #edf4fb;
+  --color-link-strong: #004b85;
+
+  /* --- エラー --- */
+  --color-error: #f44336;
+
+  /* --- 警告 --- */
+  --color-overlay: rgba(34, 34, 34, 0.4); /* モーダルの背景（暗転）。要件にない色のため、このモーダル専用 */
+
+  --color-warning: #fea600;
+  --color-warning-weak: #fef5e4;
+
+  /* --- フォント --- */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', 'Yu Gothic',
+    Meiryo, system-ui, sans-serif;
+
+  /* W4 / W5 / W6 */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* タイポグラフィ（サイズ / 行高） */
+  --fs-title: 24px;
+  --fs-screen: 20px;
+  --fs-heading: 16px;
+  --lh-heading: 24px;
+  --fs-body: 14px;
+  --lh-body: 22px;
+  --fs-small: 12px;
+  --lh-small: 16px;
+
+  /* --- 余白（4pxグリッド） --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* --- 角丸 --- */
+  --radius-sm: 4px;
+  --radius-lg: 16px; /* 予約画面プレビューのスマートフォン枠のみ */
+  --radius-pill: 999px;
+
+  /* --- 高さ・アイコン --- */
+  --control-height: 36px;
+  --control-height-sm: 32px;
+  --icon-size: 16px;
+  --icon-size-lg: 20px;
+  --icon-stroke: 1.75;
+
+  /* --- フォーカスリング --- */
+  --focus-ring: 2px solid var(--color-link-strong);
+  --focus-offset: 2px;
+
+  /* --- レイアウト（1280px基準） --- */
+  --layout-width: 1280px;
+  --header-height: 52px;
+  --sidebar-width: 210px;
+}

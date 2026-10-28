@@ -1,0 +1,410 @@
+/* ===== お客様メモ（予約詳細パネル・1:1チャット共通） ===== */
+.memo {
+  min-height: 0;
+}
+
+/* 固定ヘッダー（見出し・お客様名・操作列） */
+.memo__head {
+  flex: none;
+  padding: 0 var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.memo__customer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.memo__customer span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.memo__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 左：過去の履歴を見る／右：新規作成 */
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* 年選択メニュー */
+.year-menu {
+  position: relative;
+}
+.year-menu__button svg {
+  flex: none;
+}
+.year-menu__list {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 5;
+  min-width: 100%;
+  padding: var(--space-1);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-b4);
+  border-radius: var(--radius-sm);
+}
+.year-menu__item {
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--space-3);
+  text-align: left;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+.year-menu__item:hover {
+  background: var(--color-gray-f0);
+}
+.year-menu__item:focus-visible {
+  outline-offset: -2px;
+  background: var(--color-link-weak);
+}
+
+/* メモ一覧：ここだけが縦スクロール */
+.memo__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-4);
+  background: var(--color-white);
+  scrollbar-width: auto;
+  scrollbar-color: var(--color-gray-b4) var(--color-gray-f8);
+}
+.memo__scroll::-webkit-scrollbar {
+  width: 12px;
+}
+.memo__scroll::-webkit-scrollbar-track {
+  background: var(--color-gray-f8);
+}
+.memo__scroll::-webkit-scrollbar-thumb {
+  background: var(--color-gray-b4);
+  border: 3px solid var(--color-gray-f8);
+  border-radius: var(--radius-pill);
+}
+.memo__scroll:focus-visible {
+  outline-offset: -2px;
+}
+
+.memo__group + .memo__group {
+  margin-top: var(--space-6);
+}
+/* 最後の年も見出しを最上部まで移動できるよう、複数年のときだけ余白を確保する */
+.memo__group:last-of-type:not(:only-of-type) { /* ピン留め欄（div）は数えない */
+  min-height: 100%;
+}
+.memo__year {
+  margin: 0 0 var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+}
+.memo__pinned {
+  margin-bottom: var(--space-6);
+}
+.memo__pinned--empty {
+  margin-bottom: var(--space-4);
+}
+.memo__year--pinned {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.memo__year--pinned > svg {
+  flex: none;
+  color: var(--color-text); /* 案内文のピンは白黒（線のみ）。赤い塗りつぶしは、ピン留め中のカードのボタンだけ */
+}
+.memo__pinned-note {
+  min-width: 0;
+}
+.memo__year:focus-visible {
+  outline-offset: 2px;
+}
+.memo__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.memo__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  background: var(--color-gray-f8);
+  border: 1px dashed var(--color-gray-b4);
+  border-radius: var(--radius-sm);
+}
+
+/* メモカード */
+.memo-card {
+  overflow: hidden;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-ddd);
+  border-radius: var(--radius-sm);
+}
+.memo-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  background: var(--color-gray-f0);
+  border-bottom: 1px solid var(--color-gray-ddd);
+}
+.memo-card__title {
+  margin: 0;
+  padding: var(--space-1) 0;
+  font-size: var(--fs-heading); /* 見出し・ヘッダー：16px / 500 / 行高24px */
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-heading);
+  overflow-wrap: anywhere;
+}
+.memo-card__title.is-empty {
+  color: var(--color-gray-888);
+}
+.memo-card__tools {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+}
+.memo-card__pin {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--color-gray-888);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+.memo-card__pin:hover {
+  background: var(--color-white);
+  border-color: var(--color-gray-b4);
+}
+.memo-card__pin.is-pinned {
+  color: var(--color-error); /* ピン留め中：赤い塗りつぶしのピン */
+}
+.memo-card__pin[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.memo-card__pin[aria-disabled='true']:hover {
+  background: none;
+  border-color: transparent;
+}
+.memo-card__edit {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--color-text);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+.memo-card__edit:hover {
+  background: var(--color-white);
+  border-color: var(--color-gray-b4);
+}
+.memo-card__pin,
+.memo-card__edit {
+  position: relative;
+}
+/* ホバー・キーボードフォーカスの瞬間に出る説明（ブラウザ標準の title は表示が遅いため使わない） */
+.memo-card__pin[data-tip]:hover::after,
+.memo-card__pin[data-tip]:focus-visible::after,
+.memo-card__edit[data-tip]:hover::after,
+.memo-card__edit[data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 10;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-small);
+  white-space: nowrap;
+  color: var(--color-white);
+  background: var(--color-text);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+.memo-card__body {
+  margin: 0;
+  padding: var(--space-3);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  white-space: pre-wrap; /* 改行を保持。全文を展開し、内部スクロールは作らない */
+  overflow-wrap: anywhere;
+}
+.memo-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+  padding: 0 var(--space-3) var(--space-3);
+}
+/* 本文のないメモは、見出しの下に余白を取る（上の .memo-card__foot より後ろに書いて上書きされないようにする） */
+.memo-card__foot--solo {
+  padding-top: var(--space-3);
+}
+
+/* 保存成功の通知（控えめ） */
+.memo__notice-area {
+  flex: none;
+}
+.memo__notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-text);
+  background: var(--color-white);
+  border-top: 1px solid var(--color-main);
+}
+.memo__notice--info {
+  border-top-color: var(--color-warning);
+}
+
+/* 入力モーダル（背景は暗転。一覧は背面に残る） */
+.memo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40; /* 予約詳細パネル(20)より前面 */
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+}
+.memo-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--color-overlay);
+}
+.memo-modal__dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 480px;
+  max-height: calc(100vh - 2 * var(--space-6)); /* 小さい画面でも✖と保存ボタンが隠れない */
+  overflow: hidden;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.memo-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex: none;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+.memo-modal__titles {
+  min-width: 0;
+}
+.memo-modal__customer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+.memo-modal__customer span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* 変更を破棄しますか？（入力モーダルの上に出す確認画面） */
+.memo-confirm {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+}
+.memo-confirm__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--color-overlay);
+}
+.memo-confirm__dialog {
+  position: relative;
+  width: 360px;
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.memo-confirm__dialog > p {
+  margin: 0;
+}
+.memo-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+/* 入力フォーム */
+.memo-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.memo-form__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+.memo-form__footer,
+.memo-form__confirm {
+  flex: none;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.memo-form__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.memo-form__save {
+  margin-left: auto; /* 削除ボタンが無い新規作成でも右端 */
+}
+.memo-form__confirm {
+  background: var(--color-warning-weak);
+  border-top-color: var(--color-warning);
+}
+.memo-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* 予約履歴 */
+.history__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.history__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-gray-ddd);
+  border-radius: var(--radius-sm);
+}

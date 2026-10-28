@@ -1,0 +1,141 @@
+/* ===== 本日／新着の予約 ===== */
+.page {
+  width: 1000px;
+  padding: var(--space-5) 0 var(--space-8) var(--space-5);
+  box-sizing: content-box;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 16px;
+  color: var(--color-gray-888);
+}
+.breadcrumb a {
+  color: var(--color-gray-888);
+  text-decoration: underline;
+}
+.breadcrumb a:hover {
+  color: var(--color-text);
+}
+
+.page__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.page__shop {
+  margin: 0;
+  /* 既存の予約管理画面のサロン名に合わせる：24px / 600 / 行高27px（デザイン要件の画面名 20/500 とは別の指定） */
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semibold);
+  line-height: 27px;
+}
+.page__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 21px;
+  margin-bottom: 27px;
+}
+.toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+.toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+.toolbar__perpage {
+  display: inline-flex;
+  align-items: center;
+}
+.toolbar__arrows {
+  letter-spacing: 8px;
+  color: var(--color-gray-b4);
+}
+
+/* 表（横スクロール付き） */
+.table-scroll {
+  position: relative; /* .sr-only がスクロール領域外へはみ出さないように */
+  overflow-x: auto;
+  scrollbar-width: auto;
+  scrollbar-color: var(--color-gray-b4) var(--color-gray-f8);
+}
+.table-scroll::-webkit-scrollbar {
+  height: 12px;
+}
+.table-scroll::-webkit-scrollbar-track {
+  background: var(--color-gray-f8);
+  border-top: 1px solid var(--color-border);
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-gray-b4);
+  border: 3px solid var(--color-gray-f8);
+  border-radius: var(--radius-pill);
+}
+
+.table {
+  width: 1508px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  padding: 0 var(--space-4);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.table thead th {
+  height: 39px;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-body);
+  background: var(--color-gray-f0);
+}
+.table tbody td {
+  height: 52px;
+  border-bottom: 1px solid var(--color-border);
+}
+.table tbody tr:hover td {
+  background: var(--color-gray-f8);
+}
+.table .is-time {
+  padding-left: 17px;
+  padding-right: 6px;
+  overflow: visible;
+  text-overflow: clip;
+}
+.table .is-amount {
+  padding-right: 0;
+}
+.table .is-note {
+  padding-left: 0;
+}
+.table .is-action {
+  padding: 0 8px 0 0;
+  text-align: right;
+}
+.table__name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.page__pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}

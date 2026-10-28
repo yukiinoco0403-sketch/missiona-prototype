@@ -1,0 +1,282 @@
+/* ===== アプリ全体 ===== */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: var(--layout-width);
+}
+
+.app__body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.app__main {
+  position: relative; /* 画面外に出す読み上げ用の文字（sr-only）を、この領域の中に閉じ込める。ないとページ全体が縦にスクロールして下が白くなる */
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+.app__main--fill {
+  overflow: hidden;
+}
+
+/* ===== ヘッダー ===== */
+.header {
+  display: flex;
+  align-items: center;
+  height: var(--header-height);
+  flex: none;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header__brand {
+  width: var(--sidebar-width);
+  padding-left: 31px;
+  flex: none;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.logo__text {
+  font-size: 22px;
+  font-weight: var(--fw-semibold);
+  line-height: 28px;
+  letter-spacing: 0.01em;
+  color: var(--color-main);
+}
+
+.header__shop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 357px;
+  height: var(--control-height);
+  margin-left: 21px;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-ddd);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+.header__shop-name {
+  flex: 1;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header__qr {
+  display: grid;
+  place-items: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  margin-left: var(--space-4);
+  padding: 0;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-ddd);
+  border-radius: var(--radius-pill);
+}
+
+.header__shop:hover,
+.header__qr:hover,
+.header__user:hover {
+  background: var(--color-gray-f8);
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-right: 86px;
+}
+
+.header__tools {
+  display: flex;
+  margin-left: var(--space-2);
+}
+.header__tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 60px;
+  height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+.header__tool:hover {
+  background: var(--color-gray-f8);
+}
+.header__tool-icon {
+  position: relative;
+  display: inline-flex;
+}
+.header__dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-error);
+  border: 1px solid var(--color-white);
+  border-radius: var(--radius-pill);
+}
+
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 179px;
+  height: var(--control-height);
+  margin-left: 38px;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-ddd);
+  border-radius: var(--radius-sm);
+}
+.header__user-icon {
+  display: inline-flex;
+}
+.header__user-name {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* ===== 左ナビ ===== */
+.sidebar {
+  position: relative;
+  width: var(--sidebar-width);
+  flex: none;
+  background: var(--color-white);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar__scroll {
+  position: relative; /* 閉じたときの読み上げ用ラベル（absolute）をここに閉じ込める。ないとページ全体が縦にスクロールする */
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-2) 0 var(--space-4);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-b4) var(--color-white);
+}
+.sidebar__scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar__scroll::-webkit-scrollbar-thumb {
+  background: var(--color-gray-b4);
+  border-radius: var(--radius-pill);
+}
+
+.sidebar__section {
+  padding-bottom: var(--space-1);
+}
+.sidebar__title {
+  padding: var(--space-2) var(--space-4) var(--space-1);
+  color: var(--color-gray-888);
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 var(--space-2) 0 var(--space-4);
+  text-decoration: none;
+  color: var(--color-text);
+}
+.sidebar__item:hover {
+  background: var(--color-gray-f8);
+}
+.sidebar__item.is-current {
+  font-weight: var(--fw-semibold);
+  color: var(--color-link-strong);
+  background: var(--color-link-weak);
+  box-shadow: inset 3px 0 0 var(--color-link-strong); /* 色だけに頼らず左端のバーでも現在地を示す */
+}
+.sidebar__item.is-current .sidebar__chevron {
+  color: var(--color-link-strong);
+}
+.sidebar__item:focus-visible {
+  outline-offset: -2px;
+}
+.sidebar__icon {
+  display: inline-flex;
+  flex: none;
+}
+.sidebar__label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar__chevron {
+  flex: none;
+  color: var(--color-gray-888);
+}
+.sidebar__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-small);
+  color: var(--color-white);
+  background: var(--color-error); /* 白文字とのコントラスト確保のため「強」を使用 */
+  border-radius: var(--radius-pill);
+}
+
+.sidebar__collapse {
+  position: absolute;
+  right: -12px;
+  bottom: 40px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--color-text);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-ddd);
+  border-radius: var(--radius-pill);
+}
+.sidebar__collapse:hover {
+  background: var(--color-gray-f8);
+}
+
+/* ===== 左ナビを閉じた状態（アイコンのみ） ===== */
+.sidebar--collapsed {
+  width: 56px;
+}
+.sidebar--collapsed .sidebar__title,
+.sidebar--collapsed .sidebar__chevron,
+.sidebar--collapsed .sidebar__badge {
+  display: none;
+}
+.sidebar--collapsed .sidebar__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+.sidebar--collapsed .sidebar__item {
+  justify-content: center;
+  padding: 0;
+}

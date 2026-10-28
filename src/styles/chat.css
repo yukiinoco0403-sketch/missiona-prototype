@@ -1,0 +1,173 @@
+/* ===== 1:1チャット（現行画面を参考にした最小構成） ===== */
+.chat {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 380px;
+  height: 100%;
+  background: var(--color-gray-f8);
+}
+
+.chat__customers {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--color-white);
+  border-right: 1px solid var(--color-border);
+}
+.chat__list-title {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+.chat__customer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  background: var(--color-white);
+  border: 0;
+  border-bottom: 1px solid var(--color-gray-f0);
+  box-shadow: inset 3px 0 0 transparent;
+}
+.chat__customer:hover {
+  background: var(--color-gray-f8);
+}
+.chat__customer.is-selected {
+  background: var(--color-link-weak);
+  box-shadow: inset 3px 0 0 var(--color-link-strong); /* 色だけに頼らず左端のバーと太字でも示す */
+}
+.chat__customer:focus-visible {
+  outline-offset: -2px;
+}
+.chat__customer-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.chat__customer-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.chat__customer-preview {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-gray-888);
+}
+
+.chat__conversation {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.chat__conv-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+  height: 56px;
+  padding: 0 var(--space-4);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+}
+.chat__messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+.chat__messages:focus-visible {
+  outline-offset: -2px;
+}
+.chat__msg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 80%;
+}
+.chat__msg--shop {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.chat__msg--customer {
+  align-self: flex-start;
+}
+.chat__msg-meta {
+  color: var(--color-gray-888);
+}
+.chat__bubble {
+  margin: 0;
+  padding: var(--space-3);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-ddd);
+  border-radius: var(--radius-sm);
+}
+.chat__msg--shop .chat__bubble {
+  background: var(--color-white);
+  border-color: var(--color-main);
+}
+.chat__note {
+  flex: none;
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-gray-888);
+  background: var(--color-white);
+  border-top: 1px solid var(--color-border);
+}
+
+.chat__memo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--space-2) var(--space-2) var(--space-2);
+  background: var(--color-gray-f0);
+  border-left: 1px solid var(--color-border);
+}
+
+/* 右側のアイコンタブ（選択中は白で下のカードとつながる） */
+.chat-tabs {
+  display: flex;
+  gap: var(--space-2);
+  flex: none;
+}
+.chat-tabs__tab {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  height: 48px;
+  padding: 0;
+  color: var(--color-gray-888);
+  background: var(--color-gray-f8);
+  border: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  cursor: default;
+}
+.chat-tabs__tab.is-selected {
+  color: var(--color-link); /* 選択中はアイコン色と白い背景の両方で示す */
+  background: var(--color-white);
+}
+.chat-tabs__tab:focus-visible {
+  outline-offset: -2px;
+}
+
+.chat__memo-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--color-white);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.chat__memo .panel-view {
+  height: 100%;
+}
+.chat__memo .panel-bar {
+  height: var(--space-3);
+}
