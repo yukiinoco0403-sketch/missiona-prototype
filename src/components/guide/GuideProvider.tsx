@@ -12,9 +12,14 @@ interface GuideContextValue {
   complete: (step: GuideStepId) => void
   /** 指定したステップだけ未完了に戻して、その先頭からもう一度案内する（ほかの画面の進み具合は変えない） */
   restart: (steps: GuideStepId[]) => void
+  /** 操作ガイドを出すか。URLに ?guide=off を付けると false（指・吹き出し・「もう一度操作ガイドを表示」を出さない、提出物だけの表示） */
+  enabled: boolean
 }
 
-const GuideContext = createContext<GuideContextValue>({ current: null, complete: () => {}, restart: () => {} })
+/** 例：https://…/?guide=off#/reservations （ハッシュ「#」より前に付ける） */
+const GUIDE_ENABLED = typeof location === 'undefined' || new URLSearchParams(location.search).get('guide') !== 'off'
+
+const GuideContext = createContext<GuideContextValue>({ current: null, complete: () => {}, restart: () => {}, enabled: false })
 
 export const useGuide = () => useContext(GuideContext)
 
@@ -38,7 +43,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     [],
   )
   const value = useMemo<GuideContextValue>(
-    () => ({ current: GUIDE_ORDER.find((s) => !done.includes(s)) ?? null, complete, restart }),
+    () => ({ current: GUIDE_ENABLED ? (GUIDE_ORDER.find((s) => !done.includes(s)) ?? null) : null, complete, restart, enabled: GUIDE_ENABLED }),
     [done, complete, restart],
   )
   return <GuideContext.Provider value={value}>{children}</GuideContext.Provider>

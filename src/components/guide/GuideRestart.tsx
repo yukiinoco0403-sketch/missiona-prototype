@@ -10,8 +10,8 @@ import { useGuide } from './GuideProvider'
  * 予約一覧・予約設定のどちらも同じ位置（入力欄や表に重ならない、タイトルと右上ボタンの間）。
  */
 export function GuideRestart({ route }: { route: Route }) {
-  const { restart } = useGuide()
-  if (route === 'chat') return null
+  const { restart, enabled } = useGuide()
+  if (route === 'chat' || !enabled) return null
   return (
     <Button variant="outline-link" className="guide-restart" onClick={() => restart(GUIDE_PAGE_STEPS[route])}>
       もう一度操作ガイドを表示
