@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { GuideHint } from '../guide/GuideHint'
+import { useGuide } from '../guide/GuideProvider'
 
 /**
  * 「過去の履歴を見る」年選択。メモが存在する年だけを表示する。
@@ -9,10 +11,14 @@ import { ChevronDown } from 'lucide-react'
 export function MemoYearMenu({
   years,
   onSelect,
+  guide = false,
 }: {
   years: number[]
   onSelect: (year: number) => void
+  /** 操作ガイドを出す（予約詳細パネルのときだけ） */
+  guide?: boolean
 }) {
+  const { complete } = useGuide()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
@@ -79,7 +85,10 @@ export function MemoYearMenu({
         aria-controls={open ? menuId : undefined}
         disabled={disabled}
         title={disabled ? 'メモがないため選択できません' : undefined}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          complete('history-menu') // 履歴メニューを開いたら、このガイドは役目を終える
+          setOpen((v) => !v)
+        }}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown' && !disabled) {
             e.preventDefault()
@@ -118,6 +127,7 @@ export function MemoYearMenu({
           ))}
         </ul>
       )}
+      {guide && !disabled && <GuideHint step="history-menu" target={btnRef} />}
     </div>
   )
 }

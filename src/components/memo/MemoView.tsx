@@ -1,11 +1,14 @@
-import { useEffect, useId, useLayoutEffect, useRef } from 'react'
-import { CircleAlert, CircleCheck, Pin, Plus } from 'lucide-react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { CircleAlert, CircleCheck, ListOrdered, Pin, Plus } from 'lucide-react'
 import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
 import { PanelTopBar } from '../ui/PanelTopBar'
 import type { Customer } from '../../data/customers'
+import { GuideHint } from '../guide/GuideHint'
+import { useGuide } from '../guide/GuideProvider'
 import { MemoCard } from './MemoCard'
 import { MemoForm } from './MemoForm'
+import { MemoSortModal } from './MemoSortModal'
 import { MemoYearMenu } from './MemoYearMenu'
 import { PIN_LIMIT } from '../../store/memoStore'
 import type { MemoWorkspace } from './useMemoWorkspace'
@@ -36,8 +39,39 @@ export function MemoView({ ws, customer, backLabel, onBack, onClose }: Props) {
   const uid = useId()
   const scrollRef = useRef<HTMLDivElement>(null)
   const createBtnRef = useRef<HTMLButtonElement>(null)
+  const { complete: completeGuide } = useGuide()
   const isForm = ws.mode === 'form'
+
+  // 並べ替え画面（モーダル）。閉じたら、開いたボタンへフォーカスを戻す
+  const sortBtnRef = useRef<HTMLButtonElement>(null)
+  const [sorting, setSorting] = useState(false)
+  const wasSorting = useRef(false)
+  useEffect(() => {
+    if (sorting) wasSorting.current = true
+    else if (wasSorting.current) {
+      wasSorting.current = false
+      sortBtnRef.current?.focus({ preventScroll: true })
+    }
+  }, [sorting])
+  // 並べ替えられるのは、同じ年に2件以上あるとき（ピン留め中のメモは対象外）
+  const canSort = ws.groups.some((g) => g.memos.length >= 2)
+  const togglePin = (id: string) => {
+    completeGuide('pin-button') // ピン留めを操作したら、このガイドは役目を終える
+    ws.togglePin(id)
+  }
+  // 操作ガイド：一覧の先頭にあるメモのピンボタン
+  const firstPinButton = () => scrollRef.current?.querySelector<HTMLElement>('[data-memo-pin]') ?? null
   const yearId = (y: number) => `${uid}-year-${y}`
+
+  // 操作ガイド：新規作成の入力モーダルが閉じたら（保存・破棄・✖のどれでも）、吹き出しは役目を終える
+  const openedNew = useRef(false)
+  useEffect(() => {
+    if (isForm) openedNew.current = !ws.editing
+    else if (openedNew.current) {
+      openedNew.current = false
+      if (backLabel) completeGuide('create-modal')
+    }
+  }, [isForm, ws.editing, backLabel, completeGuide])
 
   // 一覧へ戻った時：スクロール位置の復元／新規・編集メモの表示位置への移動
   useLayoutEffect(() => {
@@ -126,15 +160,40 @@ export function MemoView({ ws, customer, backLabel, onBack, onClose }: Props) {
           <span>{customer.displayName}</span>
         </p>
         <div className="memo__actions">
-          <MemoYearMenu years={ws.years} onSelect={goToYear} />
-          <Button ref={createBtnRef} variant="primary" icon={<Plus size={16} strokeWidth={1.75} aria-hidden="true" />} onClick={ws.openCreate}>
-            新規作成
-          </Button>
+          <MemoYearMenu years={ws.years} onSelect={goToYear} guide={Boolean(backLabel)} />
+          <div className="memo__actions-end">
+            <Button
+              ref={sortBtnRef}
+              className="memo__sort"
+              icon={<ListOrdered size={16} strokeWidth={1.75} aria-hidden="true" />}
+              aria-label="メモを並べ替え"
+              aria-haspopup="dialog"
+              title={canSort ? '並べ替え' : '並べ替えできるメモがありません（同じ年に2件以上で使えます）'}
+              disabled={!canSort}
+              onClick={() => setSorting(true)}
+            />
+            <Button
+              ref={createBtnRef}
+              variant="primary"
+              icon={<Plus size={16} strokeWidth={1.75} aria-hidden="true" />}
+              onClick={() => {
+                completeGuide('create-button') // 新規作成を開いたら、このガイドは役目を終える
+                ws.openCreate()
+              }}
+            >
+              新規作成
+            </Button>
+          </div>
         </div>
       </header>
+      {/* 操作ガイド：予約詳細パネルのときだけ（1:1チャットのメモ欄には出さない）。ボタンの後ろに置く */}
+      {backLabel && <GuideHint step="create-button" target={createBtnRef} />}
 
       {/* 新規作成・編集は別モーダル。一覧はそのまま背面に残す */}
-      {isForm && <MemoForm ws={ws} customer={customer} />}
+      {/* 並べ替え画面 */}
+      {sorting && <MemoSortModal ws={ws} onClose={() => setSorting(false)} />}
+
+      {isForm && <MemoForm ws={ws} customer={customer} guide={Boolean(backLabel)} />}
 
       <div
         ref={scrollRef}
@@ -171,7 +230,7 @@ export function MemoView({ ws, customer, backLabel, onBack, onClose }: Props) {
                 <ul className="memo__cards">
                   {ws.pinned.map((m) => (
                     <li key={m.id}>
-                      <MemoCard memo={m} onEdit={ws.openEdit} onTogglePin={ws.togglePin} pinLimitReached={ws.pinned.length >= PIN_LIMIT} />
+                      <MemoCard memo={m} onEdit={ws.openEdit} onTogglePin={togglePin} pinLimitReached={ws.pinned.length >= PIN_LIMIT} />
                     </li>
                   ))}
                 </ul>
@@ -185,7 +244,7 @@ export function MemoView({ ws, customer, backLabel, onBack, onClose }: Props) {
                 <ul className="memo__cards">
                   {g.memos.map((m) => (
                     <li key={m.id}>
-                      <MemoCard memo={m} onEdit={ws.openEdit} onTogglePin={ws.togglePin} pinLimitReached={ws.pinned.length >= PIN_LIMIT} />
+                      <MemoCard memo={m} onEdit={ws.openEdit} onTogglePin={togglePin} pinLimitReached={ws.pinned.length >= PIN_LIMIT} />
                     </li>
                   ))}
                 </ul>
@@ -194,6 +253,9 @@ export function MemoView({ ws, customer, backLabel, onBack, onClose }: Props) {
           </>
         )}
       </div>
+
+      {/* 操作ガイド：予約詳細パネルのときだけ。一覧の後ろに置く（ボタンができてから位置を測る） */}
+      {backLabel && !isForm && <GuideHint step="pin-button" target={firstPinButton} />}
 
       <div className="memo__notice-area" role="status" aria-live="polite">
         {ws.notice && (

@@ -25,6 +25,7 @@ export function Tabs({
           <button
             key={item.id}
             role="tab"
+            data-tab={item.id}
             type="button"
             aria-selected={selected}
             className={`tabs__tab${selected ? ' is-selected' : ''}`}

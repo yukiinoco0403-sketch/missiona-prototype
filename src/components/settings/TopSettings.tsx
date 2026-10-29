@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
 import { RichTextEditor } from '../ui/RichTextEditor'
 import type { TopSettings as Top } from '../../data/booking'
 
@@ -31,15 +30,13 @@ interface Props {
   onChange: (patch: Partial<Top>) => void
   /** 保存ボタン：変更は入力のたびに保存されているので、保存済みであることを知らせる */
   onSave: () => boolean
-  previewShown: boolean
-  onTogglePreview: () => void
 }
 
 /**
  * 既存の「トップ画面設定」画面。
- * トップ画面の表示／非表示 → イメージ → 店舗名 → テキスト → 保存・プレビュー。
+ * トップ画面の表示／非表示 → イメージ → 店舗名 → テキスト → 保存。
  */
-export function TopSettings({ top, onChange, onSave, previewShown, onTogglePreview }: Props) {
+export function TopSettings({ top, onChange, onSave }: Props) {
   const file = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState('')
   const [imageError, setImageError] = useState('')
@@ -159,11 +156,6 @@ export function TopSettings({ top, onChange, onSave, previewShown, onTogglePrevi
           onClick={() => say(onSave() ? '保存しました' : '保存できませんでした（ブラウザの保存領域がいっぱいです）')}
         >
           保存
-        </button>
-        {/* 保存から64px離す（質問項目ページの「この項目を削除」との間隔と同じ） */}
-        <button type="button" className="qpill ts__preview" aria-pressed={previewShown} aria-controls="booking-preview" onClick={onTogglePreview}>
-          {previewShown ? <Eye size={16} strokeWidth={1.75} aria-hidden="true" /> : <EyeOff size={16} strokeWidth={1.75} aria-hidden="true" />}
-          プレビュー
         </button>
         <span className="ts__saved t-small" role="status">
           {message}

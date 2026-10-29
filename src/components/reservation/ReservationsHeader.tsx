@@ -1,6 +1,8 @@
 import { Calendar, CornerDownLeft } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Tabs } from '../ui/Tabs'
+import { GuideHint } from '../guide/GuideHint'
+import { useGuide } from '../guide/GuideProvider'
 import { shop } from '../../data/reservations'
 import { navigate } from '../../lib/navigation'
 
@@ -13,7 +15,8 @@ const tabs = [
 ]
 
 /** 予約管理の共通ヘッダー（パンくず・店舗名・上部タブ）。この2画面だけが移動先として動く。 */
-export function ReservationsHeader({ active }: { active: 'today' | 'settings' }) {
+export function ReservationsHeader({ active, guideSettingsTab = false }: { active: 'today' | 'settings'; guideSettingsTab?: boolean }) {
+  const { complete } = useGuide()
   return (
     <>
       <nav className="breadcrumb t-small" aria-label="パンくず">
@@ -36,9 +39,14 @@ export function ReservationsHeader({ active }: { active: 'today' | 'settings' })
         ariaLabel="予約管理メニュー"
         onSelect={(id) => {
           if (id === 'today') navigate('#/reservations')
-          else if (id === 'settings') navigate('#/settings')
+          else if (id === 'settings') {
+            complete('settings-tab') // 予約設定を開いたら、このガイドは役目を終える
+            navigate('#/settings')
+          }
         }}
       />
+      {/* 操作ガイド：予約設定のタブを指す（予約一覧にいて、予約詳細パネルが閉じているときだけ） */}
+      {active === 'today' && guideSettingsTab && <GuideHint step="settings-tab" target={() => document.querySelector<HTMLElement>('[data-tab="settings"]')} />}
     </>
   )
 }

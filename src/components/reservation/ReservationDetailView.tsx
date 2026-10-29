@@ -2,6 +2,8 @@ import { useLayoutEffect, useRef } from 'react'
 import { ArrowLeftRight, CreditCard, List, NotebookText, X } from 'lucide-react'
 import { CloseIcon } from '../ui/CloseIcon'
 import { DETAIL_HERO_PHOTO } from '../../data/photos'
+import { GuideHint } from '../guide/GuideHint'
+import { useGuide } from '../guide/GuideProvider'
 import { Avatar } from '../ui/Avatar'
 import type { Customer } from '../../data/customers'
 import { formatDetailDate, shop, type Reservation } from '../../data/reservations'
@@ -48,6 +50,8 @@ export function ReservationDetailView({
   onOpenMemo,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const memoChipRef = useRef<HTMLButtonElement>(null) // 操作ガイド：お客様メモのボタン
+  const { complete } = useGuide()
   const cancelled = r.status === 'cancelled'
 
   // 戻ってきたときにスクロール位置を復元
@@ -78,7 +82,16 @@ export function ReservationDetailView({
           </span>
           <span className="detail__status-actions">
             {/* 改善②：お客様メモ（顧客IDで対象を特定） */}
-            <button type="button" className="detail__chip" data-chip="memo" onClick={(e) => onOpenMemo(e.currentTarget)}>
+            <button
+              ref={memoChipRef}
+              type="button"
+              className="detail__chip"
+              data-chip="memo"
+              onClick={(e) => {
+                complete('memo-chip') // お客様メモを開いたら、このガイドは役目を終える
+                onOpenMemo(e.currentTarget)
+              }}
+            >
               <NotebookText size={14} strokeWidth={2} aria-hidden="true" />
               お客様メモ
             </button>
@@ -204,6 +217,9 @@ export function ReservationDetailView({
           )}
         </div>
       </div>
+
+      {/* 操作ガイド：お客様メモのボタンの後ろに置く（要素ができてから位置を測る） */}
+      <GuideHint step="memo-chip" target={memoChipRef} />
     </div>
   )
 }

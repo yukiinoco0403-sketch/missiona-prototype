@@ -15,6 +15,8 @@ export interface CustomerMemo {
   updatedAt: string
   /** ピン留めした日時。未設定・null はピン留めなし（ピン留めは内容の編集ではないため updatedAt は動かさない） */
   pinnedAt?: string | null
+  /** 並べ替えで決めた順番（小さいほど上。同じ年の中で使う）。未設定は並べ替え前＝新しいものを上に。更新日時は動かさない */
+  order?: number | null
 }
 
 /** 1人のお客様につきピン留めできる件数（プロトタイプの仕様） */
@@ -223,6 +225,12 @@ export const memoStore = {
     }
     commit(state.map((m) => (m.id === id ? { ...m, pinnedAt: pinned ? new Date().toISOString() : null } : m)))
     return true
+  },
+
+  /** 並べ替えの保存。渡した順に 0,1,2… を振る（内容は変えないので更新日時は動かさない） */
+  reorder(orderedIds: string[]) {
+    const rank = new Map(orderedIds.map((id, i) => [id, i]))
+    commit(state.map((m) => (rank.has(m.id) ? { ...m, order: rank.get(m.id)! } : m)))
   },
 
   /** メモを削除する（編集画面の「このメモを削除する」から。確認後に実行） */

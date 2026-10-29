@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Clock, Link as LinkIcon, List } from 'lucide-react'
+import { GuideHint } from '../components/guide/GuideHint'
+import { useGuide } from '../components/guide/GuideProvider'
 import { ReservationsHeader } from '../components/reservation/ReservationsHeader'
 import { BookingPreview } from '../components/settings/BookingPreview'
 import { QuestionSettings } from '../components/settings/QuestionSettings'
@@ -44,8 +46,8 @@ const NAV: NavGroup[] = [
 
 export function ReservationSettings() {
   const [settings, setSettings] = useState<BookingSettings>(loadSettings)
+  const { complete: completeGuide } = useGuide()
   const [section, setSection] = useState<Section>(readSection)
-  const [showPreview, setShowPreview] = useState(true)
 
   // どの設定も、変更のたびにブラウザへ保存する（既存の質問項目画面と同じ）。最初の描画では保存しない
   const savedRef = useRef(settings)
@@ -97,13 +99,12 @@ export function ReservationSettings() {
     document.querySelector<HTMLElement>('.smain [data-page-heading]')?.focus({ preventScroll: true })
   }, [section])
 
-  // プレビューを表示している間だけ、既存のサイドバーを閉じて横幅を確保する（閉じる前の状態に戻る）
+  // プレビューは常に右側へ表示するため、この画面にいる間は既存のサイドバーを閉じて横幅を確保する（離れたら元の状態に戻る）
   useEffect(() => {
-    if (!showPreview) return
     const before = getSidebarCollapsed()
     setSidebarCollapsed(true)
     return () => setSidebarCollapsed(before)
-  }, [showPreview])
+  }, [])
 
   // 追加・選択肢追加の直後は、入力欄へフォーカスを移す（入力中のライブ更新ではフォーカスを動かさない）
   const { focusField } = ed
@@ -115,7 +116,7 @@ export function ReservationSettings() {
   }, [focusField])
 
   return (
-    <div className={`page page--settings${showPreview ? ' has-preview' : ''}`}>
+    <div className={`page page--settings has-preview`}>
       <ReservationsHeader active="settings" />
 
       <div className="swork">
@@ -150,20 +151,19 @@ export function ReservationSettings() {
               top={settings.top}
               onChange={patchTop}
               onSave={() => persistSettings(settings)}
-              previewShown={showPreview}
-              onTogglePreview={() => setShowPreview((v) => !v)}
             />
           ) : (
-            <QuestionSettings ed={ed} previewShown={showPreview} onTogglePreview={() => setShowPreview((v) => !v)} />
+            <QuestionSettings ed={ed} />
           )}
         </div>
 
-        {showPreview && (
-          <div id="booking-preview" className="spreview">
-            <BookingPreview settings={previewSettings} session={session} />
-            <p className="spreview__note t-small">確認用：予約は登録されません</p>
-          </div>
-        )}
+        {/* プレビュー内を実際に操作したら、操作ガイド（リアルタイムプレビュー）は役目を終える */}
+        <div id="booking-preview" className="spreview" onClickCapture={() => completeGuide('live-preview')}>
+          <BookingPreview settings={previewSettings} session={session} />
+          <p className="spreview__note t-small">確認用：予約は登録されません</p>
+        </div>
+        {/* 操作ガイド：プレビューの上部（ヘッダー）を指す。吹き出しは左隣に出して、プレビューに重ねない */}
+        <GuideHint step="live-preview" target={() => document.querySelector<HTMLElement>('#booking-preview .pv-head')} tipSide="left" />
       </div>
     </div>
   )

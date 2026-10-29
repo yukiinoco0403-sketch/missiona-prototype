@@ -1278,9 +1278,6 @@ button.qpill[aria-pressed='true'] {
 .ts__btn:hover {
   background: var(--color-gray-f8);
 }
-.ts__btn[aria-pressed='true'] {
-  border-color: var(--color-gray-888);
-}
 .ts__btn--save {
   color: var(--color-main);
   border-color: var(--color-main);
@@ -1288,9 +1285,6 @@ button.qpill[aria-pressed='true'] {
 .ts__btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 2px;
-}
-.ts__preview {
-  margin-left: calc(64px - var(--space-3)); /* 保存との間隔を64pxに（.ts__actions の gap 12px を差し引く） */
 }
 .ts__saved {
   color: var(--color-gray-888);

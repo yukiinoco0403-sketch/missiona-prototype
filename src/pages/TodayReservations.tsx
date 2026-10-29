@@ -7,6 +7,8 @@ import { Pagination } from '../components/ui/Pagination'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { Select } from '../components/ui/Select'
 import { StatusBadge } from '../components/ui/StatusBadge'
+import { GuideHint } from '../components/guide/GuideHint'
+import { useGuide } from '../components/guide/GuideProvider'
 import { ReservationsHeader } from '../components/reservation/ReservationsHeader'
 import { ReservationDetailPanel } from '../components/reservation/ReservationDetailPanel'
 import { getCustomer } from '../data/customers'
@@ -20,17 +22,24 @@ export function TodayReservations() {
   const [page, setPage] = useState(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
+  const firstNameRef = useRef<HTMLButtonElement>(null) // 操作ガイド：先頭の予約の名前リンク
+  const { complete } = useGuide()
 
-  const openDetail = useCallback((id: string, trigger: HTMLElement) => {
-    triggerRef.current = trigger
-    setSelectedId(id)
-  }, [])
+  const openDetail = useCallback(
+    (id: string, trigger: HTMLElement) => {
+      triggerRef.current = trigger
+      setSelectedId(id)
+      complete('name-link') // 名前リンクから詳細を開いたら、このガイドは役目を終える
+    },
+    [complete],
+  )
 
   const closeDetail = useCallback(() => {
     // パネルが背景の inert を解除してから、開いた要素へフォーカスを戻す
     flushSync(() => setSelectedId(null))
+    complete('pin-button') // 予約詳細パネルを閉じたら、パネル内のガイドは終わり（次の「予約設定」へ進む）
     triggerRef.current?.focus({ preventScroll: true })
-  }, [])
+  }, [complete])
 
   const rows = reservations.filter((r) => r.listed)
   const selected = rows.find((r) => r.id === selectedId)
@@ -39,7 +48,7 @@ export function TodayReservations() {
 
   return (
     <div className="page">
-      <ReservationsHeader active="today" />
+      <ReservationsHeader active="today" guideSettingsTab={!selected} />
 
       <div className="toolbar">
         <div className="toolbar__left">
@@ -115,6 +124,7 @@ export function TodayReservations() {
                   <span className="table__name">
                     <Avatar initial={customer.avatarInitial} tone={customer.avatarTone} size={24} />
                     <button
+                      ref={r.id === rows[0].id ? firstNameRef : undefined}
                       type="button"
                       className="link-button"
                       aria-haspopup="dialog"
@@ -148,6 +158,9 @@ export function TodayReservations() {
       <div className="page__pagination">
         <Pagination page={page} pageCount={1} onChange={setPage} />
       </div>
+
+      {/* 操作ガイド：表の後ろに置く（名前リンクの要素ができてから位置を測る） */}
+      <GuideHint step="name-link" target={firstNameRef} />
 
       {selected && <ReservationDetailPanel key={selected.id} reservation={selected} onClose={closeDetail} />}
     </div>

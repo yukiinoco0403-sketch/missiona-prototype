@@ -34,6 +34,18 @@ export interface Notice {
 }
 
 const EMPTY: Draft = { title: '', body: '' }
+
+/**
+ * 同じ年の中の並び：並べ替えで決めた順（order の小さい順）。
+ * まだ順番のないメモ（並べ替え後に作ったもの）は、作成日時の新しい順で一番上に出す。
+ */
+function sortByOrder(ms: CustomerMemo[]): CustomerMemo[] {
+  const has = (m: CustomerMemo) => typeof m.order === 'number'
+  return [...ms].sort((a, b) => {
+    if (has(a) !== has(b)) return has(a) ? 1 : -1
+    return has(a) ? a.order! - b.order! : Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id)
+  })
+}
 const count = (s: string) => Array.from(s).length
 
 export function validate(d: Draft): MemoErrors {
@@ -86,7 +98,7 @@ export function useMemoWorkspace(customerId: string) {
       const y = yearOf(m.createdAt) // 作成日時で判定（編集しても年は移動しない）
       map.set(y, [...(map.get(y) ?? []), m])
     }
-    return [...map.entries()].sort((a, b) => b[0] - a[0]).map(([year, ms]) => ({ year, memos: ms }))
+    return [...map.entries()].sort((a, b) => b[0] - a[0]).map(([year, ms]) => ({ year, memos: sortByOrder(ms) }))
   }, [memos])
 
   const openCreate = useCallback(() => {
@@ -205,6 +217,12 @@ export function useMemoWorkspace(customerId: string) {
     [memos],
   )
 
+  /** 並べ替えの保存（ピン留め以外のメモの順番）。保存したことは通知で伝える */
+  const saveOrder = useCallback((orderedIds: string[]) => {
+    memoStore.reorder(orderedIds)
+    setNotice({ id: ++noticeSeq.current, text: 'メモの並び順を保存しました', tone: 'success' })
+  }, [])
+
   const requestDelete = useCallback(() => {
     setPending(null)
     setDeleting(true)
@@ -254,6 +272,7 @@ export function useMemoWorkspace(customerId: string) {
     openCreate,
     openEdit,
     togglePin,
+    saveOrder,
     cancelForm,
     requestLeave,
     confirmDiscard,

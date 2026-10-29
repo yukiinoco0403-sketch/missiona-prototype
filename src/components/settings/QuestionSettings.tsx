@@ -2,8 +2,6 @@ import {
   AlignLeft,
   ChevronDown,
   CircleHelp,
-  Eye,
-  EyeOff,
   Info,
   Link2,
   ListChecks,
@@ -38,15 +36,13 @@ const TYPE_ICON: Record<QuestionType, ReactNode> = {
 
 interface Props {
   ed: QuestionEditor
-  previewShown: boolean
-  onTogglePreview: () => void
 }
 
 /**
  * 既存の「予約時のお客様への質問項目」画面。
  * 1 追加したい項目を選択 ／ 2 項目（一覧） ／ 3 編集 の3段構成。
  */
-export function QuestionSettings({ ed, previewShown, onTogglePreview }: Props) {
+export function QuestionSettings({ ed }: Props) {
   const sel = ed.questions.find((q) => q.id === ed.selected) ?? null
   return (
     <div className="qs">
@@ -120,20 +116,13 @@ export function QuestionSettings({ ed, previewShown, onTogglePreview }: Props) {
             )}
           </div>
           {sel && <EditForm key={sel.id} q={sel} ed={ed} />}
-          {/* 削除とプレビューは誤操作を避けるため、左右の端に離して置く */}
-          <div className="qs__foot">
-            {sel ? (
+          {sel && (
+            <div className="qs__foot">
               <button type="button" className="qdel" onClick={() => ed.removeQuestion(sel.id)}>
                 この項目を削除
               </button>
-            ) : (
-              <span />
-            )}
-            <button type="button" className="qpill" aria-pressed={previewShown} aria-controls="booking-preview" onClick={onTogglePreview}>
-              {previewShown ? <Eye size={16} strokeWidth={1.75} aria-hidden="true" /> : <EyeOff size={16} strokeWidth={1.75} aria-hidden="true" />}
-              プレビュー
-            </button>
-          </div>
+            </div>
+          )}
         </section>
       </div>
     </div>

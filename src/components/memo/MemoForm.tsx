@@ -4,6 +4,7 @@ import { CircleAlert } from 'lucide-react'
 import { CloseIcon } from '../ui/CloseIcon'
 import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
+import { GuideBubble } from '../guide/GuideBubble'
 import type { Customer } from '../../data/customers'
 import { acquireInert } from '../../lib/inertLock'
 import { BODY_MAX, TITLE_MAX, charCount, type MemoWorkspace } from './useMemoWorkspace'
@@ -15,7 +16,7 @@ const FOCUSABLE =
  * 新規作成・編集の入力モーダル（予約管理・1:1チャットで共用）。
  * 閉じる操作は右上の✖。入力がある場合は、✖・背景クリック・Escのいずれでも破棄の確認を挟む。
  */
-export function MemoForm({ ws, customer }: { ws: MemoWorkspace; customer: Customer }) {
+export function MemoForm({ ws, customer, guide = false }: { ws: MemoWorkspace; customer: Customer; guide?: boolean }) {
   const uid = useId()
   const wrapRef = useRef<HTMLDivElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -234,6 +235,9 @@ export function MemoForm({ ws, customer }: { ws: MemoWorkspace; customer: Custom
           )}
         </form>
       </div>
+
+      {/* 操作ガイド：新規作成のときだけ、予約詳細パネルから開いたときの吹き出し（指のアイコンなし） */}
+      {guide && !ws.editing && <GuideBubble step="create-modal" anchor={dialogRef} />}
 
       {/* 編集中に✖などで閉じようとしたときの確認（保存／破棄で選ぶ）。背景クリック・Escは「編集に戻る」 */}
       {pending && (
