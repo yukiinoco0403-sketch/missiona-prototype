@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+<title>予約管理 UX改善提案ドキュメント</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+/* レイアウト：中央1カラム（本文720px / 比較1040px）、上部に01〜07の目次バーを固定 */
+:root {
+  --paper:#f7f6f2; --surface:#ffffff; --ink:#1d1f24; --ink-muted:#5d6169; --line:#dcd9d1;
+  --accent:#1f5f8b; --accent-soft:#e3eef5; --issue:#b23a0a; --issue-soft:#fbe9df;
+  --caution:#8a5300; --caution-soft:#fdf3dc; --neutral-soft:#ecebe6;
+  --font-sans:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --space-2:8px; --space-4:16px; --space-6:24px; --space-10:40px; --space-20:80px;
+  --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper:#16171a; --surface:#1f2125; --ink:#ecebe6; --ink-muted:#a3a6ad; --line:#34363b;
+  --accent:#86b9e0; --accent-soft:#1b2c3a; --issue:#f2926a; --issue-soft:#3a2219;
+  --caution:#e3b55f; --caution-soft:#33290f; --neutral-soft:#2a2c30; color-scheme:dark; } }
+:root[data-theme="dark"] {
+  --paper:#16171a; --surface:#1f2125; --ink:#ecebe6; --ink-muted:#a3a6ad; --line:#34363b;
+  --accent:#86b9e0; --accent-soft:#1b2c3a; --issue:#f2926a; --issue-soft:#3a2219;
+  --caution:#e3b55f; --caution-soft:#33290f; --neutral-soft:#2a2c30; color-scheme:dark; }
+
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:72px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+body { background:var(--paper); color:var(--ink); font:400 16px/1.75 var(--font-sans); }
+.wrap { max-width:1040px; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+.narrow { max-width:720px; }
+h1,h2,h3,h4 { text-wrap:balance; margin:0; }
+p { margin:0; }
+.label { font:500 12px/16px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--ink-muted); }
+
+/* 記入欄 */
+.ph { color:var(--ink-muted); background:var(--neutral-soft); border-radius:var(--radius-sm); padding:0 6px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+
+/* 上部の目次バー */
+body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--surface); }
+.bar { position:sticky; top:env(safe-area-inset-top, 0px); z-index:5; background:var(--surface); border-bottom:1px solid var(--line); }
+.bar .wrap { display:flex; align-items:center; gap:var(--space-4); padding-block:10px; }
+.bar__name { font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.bar nav { margin-left:auto; display:flex; gap:4px; overflow-x:auto; flex-shrink:0; max-width:100%; }
+.bar nav a { font:500 13px/1 var(--font-mono); color:var(--ink-muted); text-decoration:none; padding:8px 9px; border-radius:var(--radius-sm); }
+.bar nav a:hover { background:var(--neutral-soft); color:var(--ink); }
+a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+@media (max-width:560px) { .bar__name { display:none; } .bar nav { margin-left:0; } }
+
+/* ヘッダー */
+.hero { padding-block:var(--space-20) var(--space-10); }
+.hero h1 { font-size:clamp(30px, 5vw, 40px); line-height:1.3; margin-top:var(--space-4); }
+.hero__lead { margin-top:var(--space-4); color:var(--ink-muted); }
+.meta { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:var(--space-4); margin-top:var(--space-10); padding-top:var(--space-6); border-top:1px solid var(--line); }
+.meta dt { margin-bottom:4px; }
+.meta dd { margin:0; font-size:15px; min-width:0; overflow-wrap:anywhere; }
+
+/* テーマ選定 */
+.theme { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); padding:var(--space-10) var(--space-6); }
+.theme h2 { font-size:24px; line-height:1.4; margin-top:var(--space-2); }
+.theme__pick { margin-top:var(--space-4); font-size:20px; font-weight:700; line-height:1.6; }
+.theme h3 { font-size:17px; margin-top:var(--space-10); }
+.reasons { list-style:none; margin:var(--space-4) 0 0; padding:0; display:grid; gap:var(--space-4); counter-reset:r; }
+.reasons li { display:grid; grid-template-columns:32px 1fr; gap:var(--space-2); counter-increment:r; }
+.reasons li::before { content:counter(r); font:500 14px/28px var(--font-mono); color:var(--accent); }
+.reasons li > * { min-width:0; }
+
+/* 7項目一覧 */
+.index { margin-top:var(--space-20); }
+.index h2 { font-size:24px; margin-top:var(--space-2); }
+.index ol { list-style:none; margin:var(--space-6) 0 0; padding:0; border-top:1px solid var(--line); }
+.index li { border-bottom:1px solid var(--line); }
+.index a { display:grid; grid-template-columns:44px 1fr auto; gap:var(--space-4); align-items:center; padding:14px 4px; color:var(--ink); text-decoration:none; }
+.index a:hover { background:var(--surface); }
+.index a > * { min-width:0; }
+.index__num { font:500 14px/1 var(--font-mono); color:var(--ink-muted); }
+
+/* バッジ */
+.badges { display:flex; flex-wrap:wrap; gap:var(--space-2); }
+.badge { display:inline-flex; padding:2px 10px; border-radius:var(--radius-pill); font:700 12px/20px var(--font-sans); white-space:nowrap; }
+.badge--high { background:var(--issue-soft); color:var(--issue); }
+.badge--mid { background:var(--caution-soft); color:var(--caution); }
+.badge--low { background:var(--neutral-soft); color:var(--ink-muted); }
+.tag { display:inline-flex; padding:2px 8px; border-radius:var(--radius-sm); background:var(--neutral-soft); color:var(--ink-muted); font-size:12px; line-height:20px; white-space:nowrap; }
+.tag--add, .tag--spec { background:var(--accent-soft); color:var(--accent); }
+
+.sub { font-size:18px; line-height:1.5; margin-top:var(--space-10); padding-top:var(--space-6); border-top:1px dashed var(--line); }
+.sub + .ba { margin-top:var(--space-4); }
+.panel p { margin-top:var(--space-4); font-size:15px; line-height:1.85; }
+.shot.shot--img { display:block; aspect-ratio:auto; padding:0; border-style:solid; background:var(--surface); overflow:hidden; cursor:zoom-in; }
+.shot.shot--img img { display:block; width:100%; height:auto; }
+.prompt { display:block; quotes:"「" "」"; background:var(--paper); border-radius:var(--radius-sm); padding:var(--space-2) 10px; font-size:13px; line-height:1.7; }
+.intent { display:block; margin-top:var(--space-2); }
+.aiout p, .aiout li { margin:0; font-size:13px; line-height:1.7; }
+.aiout p + p, .aiout p + ul { margin-top:4px; }
+.aiout ul { padding-left:1.2em; }
+.aiout__label { display:block; margin-bottom:4px; font-size:11px; font-weight:700; color:var(--ink-muted); }
+.steps p.judge { margin-top:var(--space-2); }
+.effect { padding-top:var(--space-4); border-top:1px solid var(--line); }
+.effect b { display:block; font-size:14px; color:var(--accent); }
+.base { margin-top:var(--space-10); }
+.base h3 { font-size:20px; line-height:1.5; margin-top:var(--space-2); }
+.base > p { margin-top:var(--space-2); font-size:15px; }
+.base__prompt { background:var(--neutral-soft); margin-top:var(--space-4); padding:var(--space-4) var(--space-6); font-size:14px; line-height:1.8; }
+.base__prompt p { margin:0; }
+.base__prompt ul { margin:var(--space-2) 0; padding-left:1.2em; }
+.base__sub { margin-top:var(--space-6) !important; font-weight:700; font-size:15px; }
+.base__prompt b { font-weight:700; }
+.base__prompt p + p { margin-top:8px; }
+.base h4 { font-size:15px; margin-top:var(--space-6); }
+.base__points { margin:var(--space-2) 0 0; padding-left:1.2em; font-size:15px; }
+.reply b { display:block; font-size:12px; color:var(--accent); }
+.dialog { margin-top:var(--space-6); padding-top:var(--space-6); border-top:1px solid var(--line); }
+.dialog ol { list-style:none; margin:var(--space-4) 0 0; padding:0; display:grid; gap:var(--space-2); }
+.dlg { display:grid; grid-template-columns:56px 1fr; gap:var(--space-4); align-items:start; }
+.dlg__who { font:500 12px/1 var(--font-mono); letter-spacing:.08em; padding:8px 0; text-align:center; border-radius:var(--radius-sm); }
+.dlg--ai .dlg__who { background:var(--neutral-soft); color:var(--ink-muted); }
+.dlg--me .dlg__who { background:var(--accent-soft); color:var(--accent); }
+.dlg__body { min-width:0; font-size:14px; line-height:1.75; padding:6px 0; }
+.dlg--ai .dlg__body { background:var(--paper); border-radius:var(--radius-sm); padding:var(--space-2) var(--space-4); }
+.dlg__body p + p { margin-top:4px; }
+.dlg__point { display:block; margin-top:6px; font-size:13px; color:var(--accent); font-weight:700; }
+.ai-note { margin-top:var(--space-6); padding:var(--space-4) var(--space-6); background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); font-size:14px; }
+.ai-note { display:grid; gap:var(--space-4); }
+.lognote { margin-top:var(--space-2); font-size:13px; color:var(--ink-muted); }
+.base { margin-top:var(--space-10); }
+.base h3 { font-size:20px; line-height:1.5; margin-top:var(--space-2); }
+.base > p { margin-top:var(--space-2); font-size:15px; }
+.base__prompt { background:var(--neutral-soft); margin-top:var(--space-4); padding:var(--space-4) var(--space-6); font-size:14px; line-height:1.8; }
+.base__prompt p { margin:0; }
+.base__prompt ul { margin:var(--space-2) 0; padding-left:1.2em; }
+.base h4 { font-size:15px; margin-top:var(--space-6); }
+.base__points { margin:var(--space-2) 0 0; padding-left:1.2em; font-size:15px; }
+.base .reply { margin-top:var(--space-4); font-size:15px; line-height:1.8; }
+.box__label { display:block; margin-bottom:6px; font-size:12px; font-weight:700; color:var(--ink-muted); }
+.box__label--me { color:var(--accent); }
+.decision { margin-top:var(--space-4); padding:var(--space-4) var(--space-6); background:var(--accent-soft); border-radius:var(--radius-sm); font-size:15px; line-height:1.85; }
+.decision p + p { margin-top:var(--space-2); }
+.decision a { color:var(--accent); }
+.decision__list { margin:var(--space-2) 0; padding-left:1.4em; }
+.decision__list li + li { margin-top:4px; }
+.loglines { display:grid; gap:var(--space-4); }
+.links { flex-direction:column; row-gap:var(--space-4); }
+.ai-note b { margin-right:var(--space-4); }
+.ai-note a, .links a { color:var(--accent); overflow-wrap:anywhere; }
+.verdict { display:block; }
+.verdict a { color:var(--accent); }
+.verdict + .verdict { margin-top:var(--space-4); }
+.badge--main { background:var(--accent); color:var(--surface); }
+.item--main .item__num { color:var(--accent); }
+.item:not(.item--main) .item__num { font-size:40px; }
+.item:not(.item--main) .item__head h2 { font-size:20px; }
+.item:not(.item--main) .panel h3 { font-size:15px; }
+.item:not(.item--main) .panel p { font-size:14px; line-height:1.8; }
+.item:not(.item--main) .sub { font-size:16px; }
+.key { margin-top:var(--space-20); }
+.key h2 { font-size:24px; margin-top:var(--space-2); }
+.key__lead { margin-top:var(--space-4); }
+.key__grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); margin-top:var(--space-6); }
+@media (max-width:600px) { .key__grid { grid-template-columns:1fr; } }
+.key__card { display:grid; gap:6px; align-content:start; padding:var(--space-6); border-radius:var(--radius-md); background:var(--accent-soft); color:var(--ink); text-decoration:none; min-width:0; }
+.key__card:hover { outline:2px solid var(--accent); outline-offset:-2px; }
+.key__num { font:500 32px/1 var(--font-mono); color:var(--accent); }
+.key__scene { font-size:12px; font-weight:700; color:var(--accent); }
+.key__card strong { font-size:17px; line-height:1.5; }
+.key__desc { font-size:14px; line-height:1.7; color:var(--ink-muted); }
+.key__note { margin-top:var(--space-4); font-size:14px; color:var(--ink-muted); }
+/* 各項目 */
+.item { padding-top:var(--space-20); margin-top:var(--space-20); border-top:1px solid var(--line); }
+.item__head { display:grid; grid-template-columns:auto 1fr; gap:var(--space-6); align-items:start; }
+.item__num { font:500 56px/1 var(--font-mono); color:var(--ink); }
+.item__head > div { min-width:0; }
+.item__head h2 { font-size:clamp(22px, 3.4vw, 28px); line-height:1.45; margin-top:var(--space-2); }
+@media (max-width:560px) { .item__head { grid-template-columns:1fr; gap:var(--space-2); } .item__num { font-size:40px; } }
+
+.ba { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); margin-top:var(--space-10); }
+.ba figure { margin:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; min-width:0; }
+.ba__tag { display:flex; justify-content:space-between; gap:var(--space-2); padding:8px var(--space-4); font:500 12px/16px var(--font-mono); letter-spacing:.08em; }
+.ba__tag span:last-child { font-family:var(--font-sans); letter-spacing:0; font-weight:700; }
+.ba__before .ba__tag { background:var(--issue-soft); color:var(--issue); }
+.ba__after .ba__tag { background:var(--accent-soft); color:var(--accent); }
+.shot { aspect-ratio:16/10; max-width:100%; margin:var(--space-4); border:1px dashed var(--line); border-radius:var(--radius-sm); display:grid; place-items:center; text-align:center; padding:var(--space-4); color:var(--ink-muted); font-size:13px; line-height:1.6; background:var(--paper); }
+.shot img { width:100%; height:100%; object-fit:cover; }
+.ba figcaption { margin:0 var(--space-4) var(--space-4); font-size:13px; line-height:1.6; color:var(--ink-muted); }
+@media (max-width:720px) { .ba { grid-template-columns:1fr; } }
+
+.analysis { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); margin-top:var(--space-6); }
+.panel { border-radius:var(--radius-md); padding:var(--space-6); min-width:0; }
+.panel--problem { background:var(--issue-soft); }
+.panel--proposal { background:var(--accent-soft); }
+.panel h3 { font-size:17px; line-height:1.5; }
+.panel--problem h3 { color:var(--issue); }
+.panel--proposal h3 { color:var(--accent); }
+.panel dl { margin:var(--space-4) 0 0; display:grid; gap:var(--space-4); }
+.panel dt { font-weight:700; font-size:14px; }
+.panel dd { margin:2px 0 0; font-size:15px; line-height:1.75; }
+@media (max-width:720px) { .analysis { grid-template-columns:1fr; } }
+
+.ai { margin-top:var(--space-6); background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); padding:var(--space-6); }
+.ai__head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:var(--space-2); }
+.ai__head h3 { font-size:17px; }
+.ai__tools { font-size:13px; color:var(--ink-muted); }
+.steps { list-style:none; margin:var(--space-6) 0 0; padding:0; display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--space-4); counter-reset:s; }
+.steps > li { counter-increment:s; border-top:2px solid var(--line); padding-top:var(--space-4); min-width:0; }
+.steps > li::before { content:"STEP " counter(s); display:block; font:500 12px/16px var(--font-mono); letter-spacing:.08em; color:var(--ink-muted); margin-bottom:6px; }
+.steps > li:last-child { border-top-color:var(--accent); }
+.steps h4 { font-size:15px; line-height:1.5; }
+.steps p { margin-top:6px; font-size:14px; line-height:1.7; }
+@media (max-width:860px) { .steps { grid-template-columns:1fr 1fr; } }
+@media (max-width:480px) { .steps { grid-template-columns:1fr; } }
+
+/* ドキュメントの構成（必須4項目の対応表） */
+.map { margin-top:var(--space-10); }
+.map table { width:100%; border-collapse:collapse; font-size:15px; }
+.map th, .map td { text-align:left; vertical-align:top; padding:12px 8px; border-bottom:1px solid var(--line); }
+.map th { white-space:nowrap; font-weight:700; width:9em; }
+.map td a { color:var(--accent); }
+.map__scroll { overflow-x:auto; margin-top:var(--space-4); border-top:1px solid var(--line); }
+
+/* 追加機能ブロック（重点評価①） */
+.newfeat { margin-top:var(--space-4); background:var(--surface); border-radius:var(--radius-sm); padding:var(--space-4); }
+.newfeat__title { display:flex; flex-wrap:wrap; gap:var(--space-2); align-items:center; font-weight:700; font-size:15px; }
+.newfeat dl { margin:var(--space-2) 0 0; gap:var(--space-2); }
+.newfeat div { display:grid; grid-template-columns:5.5em 1fr; gap:var(--space-2); }
+.newfeat dt { color:var(--accent); font-size:13px; line-height:1.75; }
+.newfeat dd { margin:0; font-size:14px; min-width:0; }
+
+/* AIの出力 → 自分の修正 */
+.aiba { display:grid; grid-template-columns:1fr auto 1fr; gap:var(--space-4); align-items:stretch; margin-top:var(--space-6); }
+.aiba > div { border:1px solid var(--line); border-radius:var(--radius-sm); padding:var(--space-4); min-width:0; }
+.aiba p { margin-top:6px; font-size:14px; line-height:1.7; }
+.aiba__arrow { align-self:center; color:var(--ink-muted); font:500 14px/1 var(--font-mono); }
+.aiba__mine { background:var(--accent-soft); border-color:transparent !important; }
+@media (max-width:720px) { .aiba { grid-template-columns:1fr; } .aiba__arrow { justify-self:center; transform:rotate(90deg); } }
+.links { display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-6); margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--line); font-size:13px; color:var(--ink-muted); }
+.links b { font-weight:700; color:var(--ink); margin-right:6px; }
+
+/* AI活用のまとめ */
+.summary { margin-top:var(--space-20); padding-top:var(--space-20); border-top:1px solid var(--line); }
+.summary h2 { font-size:clamp(22px, 3.4vw, 28px); margin-top:var(--space-2); }
+.split { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); margin-top:var(--space-6); }
+.split section { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); padding:var(--space-6); min-width:0; }
+.split h3 { font-size:17px; }
+.split ul { margin:var(--space-4) 0 0; padding-left:1.2em; font-size:15px; }
+@media (max-width:720px) { .split { grid-template-columns:1fr; } }
+
+footer { margin-top:var(--space-20); padding-block:var(--space-10); border-top:1px solid var(--line); color:var(--ink-muted); font-size:13px; }
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap"><span class="bar__name">予約管理 UX改善提案ドキュメント</span><nav aria-label="項目へ移動"><a href="#theme">テーマ</a><a href="#issue-01">01</a><a href="#issue-02">02</a><a href="#issue-03">03</a><a href="#issue-04">04</a><a href="#issue-05">05</a><a href="#issue-06">06</a><a href="#issue-07">07</a><a href="#ai-summary">AI</a></nav></div></header><main>
+<div class="wrap narrow">
+  <section class="hero">
+    <p class="label">UI/UX Designer Assignment</p>
+    <h1>予約管理 UX改善提案ドキュメント</h1>
+    <p class="hero__lead">LINE公式アカウントの拡張システム「L Message（エルメ）」の予約管理機能を分析し、7つの項目について改善と新しい機能の追加を提案します。</p>
+    <dl class="meta">
+      <div><dt class="label">応募者</dt><dd>井上友希</dd></div>
+      <div><dt class="label">提出日</dt><dd>2026年10月31日</dd></div>
+      <div><dt class="label">プロトタイプ</dt><dd><a href="https://missiona-prototype.vercel.app/" target="_blank" rel="noopener" style="color:var(--accent)">missiona-prototype.vercel.app</a></dd></div>
+      <div><dt class="label">使用したAIツール</dt><dd>Cursor、ChatGPT Work、Claude Code</dd></div>
+    </dl>
+    <div class="map">
+      <p class="label">このドキュメントの構成</p>
+      <div class="map__scroll">
+        <table>
+          <tr><th>① テーマ選定</th><td>なぜこの機能領域を選んだのか → <a href="#theme">テーマ選定</a></td></tr>
+          <tr><th>② 課題分析</th><td>現状のUI/UXのどこに、どんな課題があるか → 各項目の【課題分析】</td></tr>
+          <tr><th>③ 提案内容</th><td>改善デザインの意図と、追加した仕様・機能 → 各項目の【提案内容】</td></tr>
+          <tr><th>④ AI活用プロセス</th><td>AIへの指示と、出力をどう判断・調整したか → 各項目の「AI活用プロセス」と <a href="#ai-summary">AI活用のまとめ</a></td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="theme" id="theme">
+    <p class="label">Theme</p>
+    <h2>テーマ選定</h2>
+    <p class="theme__pick">予約管理機能</p>
+    <h3>なぜこの領域を選んだのか</h3>
+    <ol class="reasons">
+      <li><p>自身が現役美容師であり、実際の営業中の利用場面を具体的に想定できることから、予約管理機能を選びました。</p></li>
+      <li><p>自分がサービスを導入する際、特に重視するのは、お客様が予約した後の管理業務です。予約内容や施術に必要な情報を素早く確認できるか、営業中でも迷わず操作できるかという視点で、改善点を検討しました。</p></li>
+      <li><p>また、予約を受けた後の日々の運用に加え、導入時の予約画面の構築にも着目しました。初めて利用する際の設定から、営業中の確認・記録まで、事業を滞りなく進められる予約管理を目指しています。</p></li>
+    </ol>
+  </section>
+
+  <section class="key" aria-labelledby="key-title">
+    <p class="label">Main Proposals</p>
+    <h2 id="key-title">メインの提案</h2>
+    <p class="key__lead">7項目のうち、メインの提案は次の2つです。お時間が限られる場合は、この2項目からご覧ください。</p>
+    <div class="key__grid">
+      <a class="key__card" href="#issue-02"><span class="key__num">02</span><span class="key__scene">営業中の確認</span><strong>予約詳細とお客様メモの連携</strong><span class="key__desc">予約詳細から、施術の記録が残るお客様メモを直接開けるようにします。</span></a>
+      <a class="key__card" href="#issue-07"><span class="key__num">07</span><span class="key__scene">導入時の構築</span><strong>予約の流れを体験できるリアルタイムプレビュー</strong><span class="key__desc">設定画面の右側にプレビューを置き、お客様側の画面を見ながら設定できるようにします。</span></a>
+    </div>
+    <p class="key__note">そのほかの5項目は、予約一覧とお客様メモまわりの改善です。</p>
+  </section>
+
+  <section class="index" aria-labelledby="index-title">
+    <p class="label">Issues</p>
+    <h2 id="index-title">7つの改善項目</h2>
+    <ol>
+      <li><a href="#issue-01"><span class="index__num">01</span><span>予約詳細へのアクセス改善</span><span class="badges"><span class="tag">改善</span></span></a></li>
+      <li><a href="#issue-02"><span class="index__num">02</span><span>予約詳細とお客様メモの連携</span><span class="badges"><span class="badge badge--main">メイン提案</span><span class="tag tag--add">機能追加</span></span></a></li>
+      <li><a href="#issue-03"><span class="index__num">03</span><span>過去のメモを年ごとにたどれる機能</span><span class="badges"><span class="tag tag--add">機能追加</span></span></a></li>
+      <li><a href="#issue-04"><span class="index__num">04</span><span>メモの新規作成ボタンの明確化</span><span class="badges"><span class="tag">改善</span></span></a></li>
+      <li><a href="#issue-05"><span class="index__num">05</span><span>メモ作成時の入力負担の軽減と誤操作の防止</span><span class="badges"><span class="tag tag--spec">仕様変更</span></span></a></li>
+      <li><a href="#issue-06"><span class="index__num">06</span><span>重要なメモのピン留め機能</span><span class="badges"><span class="tag tag--add">機能追加</span></span></a></li>
+      <li><a href="#issue-07"><span class="index__num">07</span><span>予約の流れを体験できるリアルタイムプレビュー</span><span class="badges"><span class="badge badge--main">メイン提案</span><span class="tag tag--add">機能追加</span></span></a></li>
+    </ol>
+  </section>
+</div>
+
+<div class="wrap">
+
+<article class="item" id="issue-01">
+  <header class="item__head">
+    <span class="item__num">01</span>
+    <div>
+      <div class="badges"><span class="tag">改善</span><span class="tag">予約一覧</span></div>
+      <h2>予約詳細へのアクセス改善</h2>
+    </div>
+  </header>
+
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/01-before.webp" target="_blank" rel="noopener"><img src="img/01-before.webp" alt="現行画面：テーブルが画面幅を超え、右端の詳細ボタンが見切れています。" loading="lazy"></a>
+      <figcaption>テーブルが画面幅を超え、右端の詳細ボタンが見切れています。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/01-after.webp" target="_blank" rel="noopener"><img src="img/01-after.webp" alt="提案画面：お客様名をリンクにし、名前から予約詳細を開けるようにしました。" loading="lazy"></a>
+      <figcaption>お客様名をリンクにし、名前から予約詳細を開けるようにしました。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行のUIでは、予約一覧のテーブル幅が画面幅を超えており、詳細ボタンが画面外に見切れています。予約詳細を確認するたびに横スクロールが必要となるため、ボタンを見つけづらく、一覧確認時の操作負担が生じます。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>予約詳細を開くリンクを、詳細ボタンから一覧のお客様名へ移しました。画面内に表示されているお客様名から、その行の予約詳細モーダルを直接開けるようにすることで、横スクロールの手間を省き、予約情報へ素早くアクセスできる設計にしました。</p>
+    </section>
+  </div>
+
+</article>
+
+<article class="item item--main" id="issue-02">
+  <header class="item__head">
+    <span class="item__num">02</span>
+    <div>
+      <div class="badges"><span class="badge badge--main">メイン提案</span><span class="tag tag--add">機能追加</span><span class="tag">予約詳細</span><span class="tag">お客様メモ</span></div>
+      <h2>予約詳細とお客様メモの連携</h2>
+    </div>
+  </header>
+
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/02-before.webp" target="_blank" rel="noopener"><img src="img/02-before.webp" alt="現行画面：予約詳細から施術の記録を参照する導線がありません。" loading="lazy"></a>
+      <figcaption>予約詳細から施術の記録を参照する導線がありません。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/02-after.webp" target="_blank" rel="noopener"><img src="img/02-after.webp" alt="提案画面：予約詳細の上部に「お客様メモ」ボタンを設置し、メモを直接開けるようにしました。" loading="lazy"></a>
+      <figcaption>予約詳細の上部に「お客様メモ」ボタンを設置し、メモを直接開けるようにしました。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行の予約詳細では、予約内容や予約時の回答情報を確認できますが、施術に関する記録を同じ画面から参照する導線がありません。施術情報を別の管理ソフトなどで確認する運用では、画面の切り替えやお客様の検索し直しが必要となり、確認に時間がかかります。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>予約詳細モーダルに「お客様メモ」ボタンを設置し、1:1チャットで使用されているメモを直接開けるようにしました。予約確認から施術情報の参照までを一連の操作で行えるようにし、画面の切り替えやお客様の検索し直しを減らすことで、営業中の作業を中断しにくい設計にしました。</p><p class="effect"><b>期待効果</b>施術者がお客様を探し直す手間が減り、施術前の確認が早くなります。その結果、お客様をお待たせする時間の短縮にもつながります。</p>
+    </section>
+  </div>
+
+  <section class="ai">
+    <div class="ai__head">
+      <h3>AI活用プロセス</h3>
+      <span class="ai__tools">使用ツール：ChatGPT Work</span>
+    </div>
+    <ol class="steps">
+      <li><h4>自分で考えたこと</h4><p>予約を確認するときに、お客様のカルテ（施術の記録）も一緒に見られるとスムーズだと感じた。そこで、予約詳細モーダルから「お客様メモ」を開けるようにする。</p></li>
+      <li><h4>AIへの指示</h4><p><q class="prompt">このモーダルの（予約履歴）ボタンの左横に同じ大きさ＆アイコンは変えて（お客様メモ）を新設しようと思います。（中略）カルテが別のタブにあると、お客様を探し直す手間もあるので、予約カレンダーの名前をタップするだけでカルテも一緒に出せるのは施術者やお客様の時短にも繋がると思いました。</q><span class="intent">ボタンの位置と大きさまで具体的に伝えたうえで、美容室などのサロンでなぜ必要なのか、現場目線の理由も添えて相談しました。</span></p></li>
+      <li><h4>AIの回答</h4><div class="prompt aiout"><p>実装は可能。「お客様メモ」を押すと、予約に紐づくお客様のメモを同じパネル内に表示できる。</p><ul><li>1:1チャットの既存のメモを、予約詳細から閲覧・編集できるようにするのが現実的。写真や施術日などを記録する専用カルテを新設する場合は、バックエンドの追加開発が必要</li><li>配置（予約履歴の左横・同じ大きさ・メモ帳や鉛筆のアイコン）は問題なし。狭い画面では2段にする</li><li>注意点：既存メモと別々に保存すると内容が食い違うため、どちらの画面から開いても同じメモを表示・更新する設計にする</li></ul></div></li>
+      <li><h4>結果</h4><p><span class="verdict"><b>採用：</b>既存メモとの連携（専用カルテは新設しない）。美容室専用のカルテになってしまうのを避けるため。また、メモが複数の種類に分かれると、ユーザーがどれを使えばよいか迷うため。</span><span class="verdict"><b>採用：</b>どちらの画面から開いても同じメモを表示・更新する設計。開く画面によって内容が違うといった混乱が起きないため。汎用性の高い既存のデザインはそのまま活かし、施術カルテとしても使えるよう、<a href="#issue-03">年ごとの移動</a>や<a href="#issue-06">ピン留め</a>などの機能を追加しました。</span><span class="verdict"><b>対象外：</b>狭い画面での2段表示。今回はデスクトップ向けのプロトタイプのため、iPadなどからの利用は想定から外しました。</span></p></li>
+    </ol>
+
+  </section>
+</article>
+
+<article class="item" id="issue-03">
+  <header class="item__head">
+    <span class="item__num">03</span>
+    <div>
+      <div class="badges"><span class="tag tag--add">機能追加</span><span class="tag">お客様メモ</span></div>
+      <h2>過去のメモを年ごとにたどれる機能</h2>
+    </div>
+  </header>
+
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/03-before.png" target="_blank" rel="noopener"><img src="img/03-before.png" alt="現行画面：メモが縦に並ぶだけで、過去の記録を探すにはスクロールが必要です。" loading="lazy"></a>
+      <figcaption>メモが縦に並ぶだけで、過去の記録を探すにはスクロールが必要です。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/03-after.webp" target="_blank" rel="noopener"><img src="img/03-after.webp" alt="提案画面：「過去の履歴を見る」から年を選ぶと、その年のメモまで移動できるようにしました。" loading="lazy"></a>
+      <figcaption>「過去の履歴を見る」から年を選ぶと、その年のメモまで移動できるようにしました。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行のメモは、長期利用によって記録が蓄積すると、過去のメモを確認するために長いスクロールが必要となり、目的の情報を見つけにくくなります。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>お客様メモの上部に、年を選べるプルダウンを設置しました。年を選ぶと、その年の見出しまで一覧が移動します。ほかの年のメモも残したまま表示するため、前後の施術の流れを続けて読むことができ、長いスクロールをせずに過去の施術記録を素早く確認できる設計にしました。</p>
+    </section>
+  </div>
+
+</article>
+
+<article class="item" id="issue-04">
+  <header class="item__head">
+    <span class="item__num">04</span>
+    <div>
+      <div class="badges"><span class="tag">改善</span><span class="tag">お客様メモ</span></div>
+      <h2>メモの新規作成ボタンの明確化</h2>
+    </div>
+  </header>
+
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/04-before.webp" target="_blank" rel="noopener"><img src="img/04-before.webp" alt="現行画面：メモ右上の新規作成はアイコンのみで、並び替えのアイコンと並んでいます。" loading="lazy"></a>
+      <figcaption>メモ右上の新規作成はアイコンのみで、並び替えのアイコンと並んでいます。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/04-after.webp" target="_blank" rel="noopener"><img src="img/04-after.webp" alt="提案画面：テキストラベル付きの「＋新規作成」ボタンにし、アクセントカラーで強調しました。" loading="lazy"></a>
+      <figcaption>テキストラベル付きの「＋新規作成」ボタンにし、アクセントカラーで強調しました。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行では、メモの新規作成がアイコンのみで表示され、周囲にも複数のアイコンが並んでいます。そのため、操作に不慣れなユーザーは、メモを追加する操作を見つけるまでに迷う可能性があります。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>アイコンのみの表示を、テキストラベル付きの「＋新規作成」ボタンに変更しました。アクセントカラーで主要な操作として強調し、視認性と操作の発見性を向上させることで、初めて利用するユーザーも迷わずメモの作成を始められる設計を目指しました。</p>
+    </section>
+  </div>
+
+</article>
+
+<article class="item" id="issue-05">
+  <header class="item__head">
+    <span class="item__num">05</span>
+    <div>
+      <div class="badges"><span class="tag tag--spec">仕様変更</span><span class="tag">お客様メモ</span></div>
+      <h2>メモ作成時の入力負担の軽減と誤操作の防止</h2>
+    </div>
+  </header>
+
+  <h3 class="sub">⑤-1 保存に必要な入力条件の見直し</h3>
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/05-1-before.webp" target="_blank" rel="noopener"><img src="img/05-1-before.webp" alt="現行画面：タイトルだけを入力して保存すると、「メモ本文を入力してください。」とエラーになります。" loading="lazy"></a>
+      <figcaption>タイトルだけを入力して保存すると、「メモ本文を入力してください。」とエラーになります。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/05-1-after.webp" target="_blank" rel="noopener"><img src="img/05-1-after.webp" alt="提案画面：タイトルだけを入力した状態でも、エラーを出さずに保存できるようにしました。" loading="lazy"></a>
+      <figcaption>タイトルだけを入力した状態でも、エラーを出さずに保存できるようにしました。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行のメモ作成では、タイトルと本文の両方を入力しないと保存できないため、営業中など、短時間で情報を記録したい場面で入力の負担が生じます。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>タイトル・本文のいずれかが入力されていれば保存できる仕様に変更しました。短い備忘録も必要な情報だけで記録できるようにし、営業中の入力負担を軽減します。</p>
+    </section>
+  </div>
+
+  <h3 class="sub">⑤-2 未保存の入力内容を保護する確認ダイアログ</h3>
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/05-2-before.webp" target="_blank" rel="noopener"><img src="img/05-2-before.webp" alt="現行画面：入力途中でも右上の「×」を押すと、確認なく入力内容が破棄されます。" loading="lazy"></a>
+      <figcaption>入力途中でも右上の「×」を押すと、確認なく入力内容が破棄されます。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/05-2-after.webp" target="_blank" rel="noopener"><img src="img/05-2-after.webp" alt="提案画面：未保存の変更があるまま閉じると、「破棄」か「保存」を選べる確認ダイアログを表示します。" loading="lazy"></a>
+      <figcaption>未保存の変更があるまま閉じると、「破棄」か「保存」を選べる確認ダイアログを表示します。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行では、未保存の状態で「×」を押すと、確認なく入力内容が破棄されるため、誤操作による情報の消失や、再入力の負担が生じます。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>未保存の変更がある状態でモーダルを閉じる際に、保存・破棄を選択する確認ダイアログを表示する仕様にしました。閉じる前に入力内容の扱いを確認できるようにし、意図しない破棄を防ぐ設計にしました。</p>
+    </section>
+  </div>
+
+</article>
+
+<article class="item" id="issue-06">
+  <header class="item__head">
+    <span class="item__num">06</span>
+    <div>
+      <div class="badges"><span class="tag tag--add">機能追加</span><span class="tag">お客様メモ</span></div>
+      <h2>重要なメモのピン留め機能</h2>
+    </div>
+  </header>
+
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/06-before.webp" target="_blank" rel="noopener"><img src="img/06-before.webp" alt="現行画面：重要なメモを上部に置くには、並び替えボタンから手作業で順番を調整する必要があります。" loading="lazy"></a>
+      <figcaption>重要なメモを上部に置くには、並び替えボタンから手作業で順番を調整する必要があります。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/06-after.webp" target="_blank" rel="noopener"><img src="img/06-after.webp" alt="提案画面：各メモのピンをワンクリックすると、「ピン留め」として一覧の上部に固定されます。" loading="lazy"></a>
+      <figcaption>各メモのピンをワンクリックすると、「ピン留め」として一覧の上部に固定されます。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行のメモには並び替え機能がありますが、重要な情報や定期的に参照するメモを上部に維持するには、手作業で表示順を調整する必要があります。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>各メモにピン留め機能を追加し、ワンクリックで一覧上部に固定できるようにしました。表示順を調整する負担を減らし、施術時の注意事項やお客様の希望など、繰り返し確認したい情報へ素早くアクセスできる設計にしました。</p>
+    </section>
+  </div>
+
+</article>
+
+<article class="item item--main" id="issue-07">
+  <header class="item__head">
+    <span class="item__num">07</span>
+    <div>
+      <div class="badges"><span class="badge badge--main">メイン提案</span><span class="tag tag--add">機能追加</span><span class="tag">予約設定</span></div>
+      <h2>予約の流れを体験できるリアルタイムプレビュー</h2>
+    </div>
+  </header>
+
+  <div class="ba">
+    <figure class="ba__before">
+      <div class="ba__tag"><span>BEFORE</span><span>現行</span></div>
+      <a class="shot shot--img" href="img/07-before.webp" target="_blank" rel="noopener"><img src="img/07-before.webp" alt="現行画面：プレビューは「プレビュー」ボタンから別に表示するため、設定画面と行き来する必要があります。" loading="lazy"></a>
+      <figcaption>プレビューは「プレビュー」ボタンから別に表示するため、設定画面と行き来する必要があります。</figcaption>
+    </figure>
+    <figure class="ba__after">
+      <div class="ba__tag"><span>AFTER</span><span>提案</span></div>
+      <a class="shot shot--img" href="img/07-after.webp" target="_blank" rel="noopener"><img src="img/07-after.webp" alt="提案画面：設定画面の右側に、入力内容がリアルタイムに反映されるプレビューを設置しました。" loading="lazy"></a>
+      <figcaption>設定画面の右側に、入力内容がリアルタイムに反映されるプレビューを設置しました。</figcaption>
+    </figure>
+  </div>
+
+  <div class="analysis">
+    <section class="panel panel--problem">
+      <h3>【課題分析】</h3>
+      <p>現行では、プレビューが設定画面とは別の単体表示となっているため、入力内容を確認するたびに「設定画面」と「プレビュー」を切り替える必要があります。特に管理画面の操作に不慣れなユーザーは、設定内容がお客様側の画面にどう反映されるかを把握しづらく、確認に手間がかかります。</p>
+    </section>
+    <section class="panel panel--proposal">
+      <h3>【提案内容】</h3>
+      <p>設定画面の右側に、入力内容をリアルタイムに反映するプレビューを設置しました。画面を切り替えずに設定結果を確認できるようにし、編集と確認の往復を減らします。また、お客様側の画面や予約の流れを確認しながら設定できるため、初めて構築するユーザーも、実際の利用場面をイメージしながら作業を進められる設計にしました。</p>
+    </section>
+  </div>
+
+  <section class="ai">
+    <div class="ai__head">
+      <h3>AI活用プロセス</h3>
+      <span class="ai__tools">使用ツール：ChatGPT Work</span>
+    </div>
+    <ol class="steps">
+      <li><h4>自分で考えたこと</h4><p>予約ページを実際に構築していく中で、お客様側の流れが見えないと全体のイメージがつかめず、手が止まりがちだった。そこで、同じ画面内にプレビューがあると良いと考えた。</p></li>
+      <li><h4>AIへの指示</h4><p><q class="prompt">同じ画面上に（右側）リアルタイムプレビューがあれば、自分が今どこの部分の構築を、なんのためにやっているのか理解しやすく（中略）お客様の気持ちになって要素を配置できると思いました。（中略）リアルタイムプレビューを設置する事で何度も構築している代行業者ではなく、初めて設定する事業者がより進みやすく、設定途中で離脱しにくいのもポイントです。</q><span class="intent">自分自身が予約ページの構築で流れを把握しづらかった体験と、「事業者が自分で構築できる」というエルメの強みをもとに、誰のための機能なのかを明確にして相談しました。</span></p></li>
+      <li><h4>AIの回答</h4><div class="prompt aiout"><p>実装は可能。「ボタンを押して確認する方式から、編集しながら右側で常時確認できる方式への改善」と整理すると明確。</p><ul><li>おすすめは、編集内容が即時反映され、仮の予約操作で流れを確認できるプレビュー（編集中の質問を強調、「戻る」「次へ」で流れを確認、サンプルデータは明記、実予約・決済・通知は発生させない）</li><li>注意点：そのまま追加すると編集欄が狭くなるため、左ナビの折りたたみやプレビューの開閉で横幅を調整する</li><li>設定途中の離脱が減るかは検証が必要だが、仮説として妥当</li></ul></div><p class="reply"><b>自分の返答</b>「プレビュー画面はあるのですが、その設定単体の画面となるので『体験』は得られず。画面単体だけではなく、ページ遷移も含めた流れを把握する事がポイントかなと思います。」</p></li>
+      <li><h4>結果</h4><p><span class="verdict"><b>採用：</b>保存前の内容もリアルタイムに反映する仕様。AIは「まずは保存後に更新」から始める段階案を示しましたが、編集しながらその場で予約者の体験を確かめることが目的のため、リアルタイム反映まで実装しました。</span><span class="verdict"><b>採用：</b>最初の画面から予約完了まで、画面を進んだり戻ったりできるプレビュー。</span><span class="verdict"><b>採用：</b>AIが提案した名前「予約の流れを体験できるリアルタイムプレビュー」。目的が伝わりやすいため、項目のタイトルにしました。</span><span class="verdict"><b>既存機能で対応：</b>プレビューを置くと編集欄が狭くなる問題。現行の左ナビがもともと折りたたみ・開閉できる仕様のため、それを活かしました。</span></p></li>
+    </ol>
+    <div class="dialog"><p class="label">対話の続き</p><ol><li class="dlg dlg--ai"><span class="dlg__who">AI</span><div class="dlg__body"><p>「設定結果の見た目」だけでなく、「お客様が予約を完了するまでの流れ」を確認できることがポイントだと捉え直した。コース選択 → スタッフ選択 → 日時選択 → 質問入力 → 内容確認 → 完了を、プレビュー内で進んだり戻ったりできる仕様を提案。</p><span class="dlg__point">自分の返答で、AIの理解が「単体の画面」から「予約の流れ」へ変わった</span></div></li><li class="dlg dlg--me"><span class="dlg__who">自分</span><div class="dlg__body">「デスクトップ画面右上にある『予約カレンダーを見る』が全体プレビューのようなものになっているのですが、現状はモーダルを開いた後に、他の設定を編集しようとするとモーダルが閉じてしまうため、このモーダルを開いたまま編集ができると良いのですが」</div></li><li class="dlg dlg--ai"><span class="dlg__who">AI</span><div class="dlg__body"><p>実装可能。ただし画像を見る限り、これはモーダルではなく別ウィンドウで開いた予約画面で、編集画面をクリックすると後ろに隠れている可能性がある。予約画面を管理画面の右側に固定表示するパネルにすれば、編集と確認を並行できる。まずは「常時表示＋保存後に更新」、次にリアルタイム反映と段階を分けられる。</p></div></li><li class="dlg dlg--me"><span class="dlg__who">自分</span><div class="dlg__body">「確かに！モーダルではなく、別ウィンドウだったので、他の編集ボタンを押したら後ろに隠れちゃってたんですね。新しく作り直すより、このウィンドウが常に開いたままであれば、プレビュー画面と編集画面を行ったり来たりしなくて良いのでいいですね！」</div></li><li class="dlg dlg--ai"><span class="dlg__who">AI</span><div class="dlg__body"><p>既存の予約画面を活用できれば、改善範囲を絞れる。ただし、別ウィンドウを常に最前面に固定することはWebサイト側からは保証できず、編集ボタンを覆う恐れもある。既存の予約画面を管理画面の右側に組み込み、編集画面と並べて表示する形が適している。</p><span class="dlg__point">既存の「予約カレンダーを見る」を活かし、新しく作らずに改善範囲を絞る方向が決まった</span></div></li></ol></div>
+  </section>
+</article>
+
+<section class="summary" id="ai-summary">
+  <div class="narrow">
+    <p class="label">AI Process</p>
+    <h2>AI活用のまとめ</h2>
+    <p style="margin-top:var(--space-4)">課題の発見と機能の発案は、実際のサロンワークを想定して自分で行いました。そのうえで、実装可能性の相談や文章の整理はChatGPT Work、プロトタイプの実装はCursorに任せ、役割を分けて進めました。</p>
+  </div>
+  <div class="split">
+    <section>
+      <h3>AIに任せたこと</h3>
+      <ul>
+        <li>プロトタイプの実装（Cursor）</li>
+        <li>エルメの機能調査、競合比較、改善テーマの候補出し（ChatGPT Work）</li>
+        <li>改善案の実装可能性の相談、提案文章の整理、Cursorへの指示文の下書き（ChatGPT Work）</li>
+        <li>提案ドキュメントのWebページ制作（Claude Code）</li>
+      </ul>
+    </section>
+    <section>
+      <h3>自分で考えたこと</h3>
+      <ul>
+        <li>サロンで働く人を想定し、予約を受けてからお客様が来店されるまでの作業工数の短縮を目的とした、機能の改善と追加</li>
+        <li>実際のサロンワークを想定して機能を触り、手が止まった箇所や迷いが出た箇所を見つけた</li>
+        <li>手を動かしていく中で、「こういう機能があればもっと効率的だ」と感じた機能を挙げていった</li>
+      </ul>
+    </section>
+  </div>
+  <div class="map narrow">
+    <p class="label">使用したツールと用途</p>
+    <div class="map__scroll">
+      <table>
+        <tr><th>Cursor</th><td>プロトタイプの実装</td></tr>
+        <tr><th>ChatGPT Work</th><td>エルメの機能調査・競合比較・改善テーマの候補出し、改善案の実装可能性の相談、提案文章の整理、Cursorへの指示文の下書き</td></tr>
+        <tr><th>Claude Code</th><td>提案ドキュメントのWebページ制作</td></tr>
+        <tr><th>会話ログ</th><td><span class="loglines"><span>ChatGPT Work（リサーチログの要約）：<a href="https://yukiinoco0403-sketch.github.io/mishona-prototype/research-log.html" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://yukiinoco0403-sketch.github.io/mishona-prototype/research-log.html</a></span><span>ChatGPT Work（機能改善・提案ログ）：<a href="https://chatgpt.com/share/6ae3f4e2-d848-83ec-918b-bed34a3cc2e6" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://chatgpt.com/share/6ae3f4e2-d848-83ec-918b-bed34a3cc2e6</a></span><span>Cursor（実装ログの要約）：<a href="https://yukiinoco0403-sketch.github.io/mishona-prototype/" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://yukiinoco0403-sketch.github.io/mishona-prototype/</a></span></span></td></tr>
+      </table>
+    </div>
+    <p class="lognote">※リサーチログは、実際の相談から予約管理に関する部分を要約したものです（個人的なやりとりは除いています）。Cursorでは先に現行画面のUIベースのみを実装し、機能改善の相談はその後に行いました。</p>
+  </div>
+</section>
+
+</div>
+</main>
+<footer><div class="wrap">予約管理 UX改善提案ドキュメント ・ 井上友希</div></footer>
+</body>
+</html>
